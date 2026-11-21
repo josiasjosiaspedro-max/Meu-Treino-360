@@ -645,6 +645,7 @@ const CLOUD = {
   message: '', error: ''
 };
 const CLOUD_SESSION_STORE = 'fullbody-2-auth-v1';
+const AUTH_RETURN_URL = 'https://josiasjosiaspedro-max.github.io/Meu-Treino-360/';
 function freshUserDB(){return {version:4,plans:[basePlan()],records:{},metrics:[],cardio:[],profile:{name:'',height:null,targetWeight:null,notes:''},exerciseLogs:{},photos:[],nutrition:{},reminders:{enabled:false,time:'07:00',lead:30}};}
 function safeUserDB(x){
   if(!x || !Array.isArray(x.plans) || !x.records || typeof x.records !== 'object')return freshUserDB();
@@ -730,7 +731,8 @@ function renderAuth(){
  <form id="auth-form"><label class="field"><span>E-mail</span><input type="email" name="email" autocomplete="email" placeholder="seu@email.com" required></label>
  <label class="field"><span>Senha</span><input type="password" name="password" autocomplete="${registration?'new-password':'current-password'}" minlength="6" placeholder="Mínimo de 6 caracteres" required></label>
  <button class="main-button" type="submit">${registration?'Criar minha conta':'Entrar e carregar meus dados'}</button></form>
- <p class="auth-message" id="auth-feedback" role="status">${CLOUD.message?safe(CLOUD.message):''}</p>
+ <p class="auth-message" id="auth-feedback" role="status" aria-live="polite">${CLOUD.message?safe(CLOUD.message):''}</p>
+ ${!registration?`<button type="button" class="auth-guest" data-action="auth-resend">Reenviar e-mail de confirmação</button><p class="auth-privacy">Após criar sua conta, confirme o endereço pelo link mais recente recebido no e-mail. Verifique também o Spam e Promoções.</p>`:''}
  <button type="button" class="auth-guest" data-action="guest">Continuar sem conta, apenas neste iPhone</button>
  <p class="auth-privacy">Cada conta acessa apenas seus próprios registros. Se usar como visitante, os dados não serão sincronizados. Não compartilhe sua senha.</p>
  </div></div>`;
@@ -742,13 +744,41 @@ async function submitAuth(form){
  btn.disabled=true;btn.textContent='Conectando…';feedback.textContent='';
  try{
   const signup=CLOUD.mode==='signup';
-  const path=signup?'/auth/v1/signup':'/auth/v1/token?grant_type=password';
+  const path=signup?'/auth/v1/signup?redirect_to='+encodeURIComponent(AUTH_RETURN_URL):'/auth/v1/token?grant_type=password';
   const s=await cloudRequest(path,{method:'POST',body:{email,password},auth:false});
   if(!s.access_token){CLOUD.message='Conta criada! Verifique seu e-mail para confirmar o cadastro. Depois, volte e toque em Entrar.';CLOUD.mode='login';renderAuth();return;}
   s.expires_at=Math.floor(Date.now()/1000)+(Number(s.expires_in)||3600);
   setCloudSession(s);CLOUD.guest=false;localStorage.removeItem('fullbody-2-guest');CLOUD.message='';
   await loadCloudUser();activeTab='home';render();
- }catch(e){feedback.textContent=String(e.message||'Não foi possível entrar.');btn.disabled=false;btn.textContent=CLOUD.mode==='signup'?'Criar minha conta':'Entrar e carregar meus dados';}
+ }catch(e){
+  const raw=String(e.message||'');
+  if(/email not confirmed|email_not_confirmed/i.test(raw)) feedback.textContent='Confirme seu e-mail antes de entrar. Se o link expirou, toque em Reenviar e-mail de confirmação.';
+  else if(/invalid login credentials|invalid_credentials/i.test(raw)) feedback.textContent='Não foi possível entrar. Verifique a senha e confirme seu e-mail. Você pode reenviar a confirmação pelo botão abaixo.';
+  else if(/rate limit|too many requests|email rate limit|429/i.test(raw)) feedback.textContent='Muitas tentativas em pouco tempo. Verifique a mensagem de confirmação mais recente e tente novamente mais tarde.';
+  else feedback.textContent=raw||'Não foi possível entrar. Verifique sua conexão e tente novamente.';
+  btn.disabled=false;btn.textContent=CLOUD.mode==='signup'?'Criar minha conta':'Entrar e carregar meus dados';
+ }
+}
+async function resendConfirmation(){
+ const form=document.querySelector('#auth-form');
+ const feedback=document.querySelector('#auth-feedback');
+ const btn=document.querySelector('[data-action="auth-resend"]');
+ if(!form||!feedback||!btn)return;
+ const email=String(new FormData(form).get('email')||'').trim().toLowerCase();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+   feedback.textContent='Informe seu e-mail no campo acima e toque novamente em Reenviar.';
+   form.querySelector('input[name="email"]')?.focus();return;
+ }
+ btn.disabled=true;feedback.textContent='Solicitando um novo e-mail de confirmação…';
+ try{
+  await cloudRequest('/auth/v1/resend?redirect_to='+encodeURIComponent(AUTH_RETURN_URL),{
+    method:'POST',body:{type:'signup',email},auth:false
+  });
+  feedback.textContent='Solicitação enviada. Verifique sua caixa de entrada e o Spam. Abra somente o link mais recente e depois entre na conta.';
+ }catch(e){
+  const msg=String(e.message||'');
+  feedback.textContent=/rate limit|too many requests|429/i.test(msg)?'Limite temporário de envios. Confira o último e-mail recebido e tente novamente mais tarde.':'Não foi possível reenviar agora: '+msg;
+ }finally{btn.disabled=false;}
 }
 function cloudSettingsCard(){
  return `<section class="card settings-panel"><h3>☁️ Minha conta e sincronização</h3>
@@ -772,5 +802,6 @@ function bootCloud(){
 }
 window.addEventListener('online',()=>{if(CLOUD.session&&CLOUD.dirty)void saveCloudUser();});
 document.addEventListener('submit',ev=>{if(ev.target.id==='auth-form'){ev.preventDefault();void submitAuth(ev.target);}});
+document.addEventListener('click',ev=>{if(ev.target.closest('[data-action="auth-resend"]')){ev.preventDefault();void resendConfirmation();}});
 bootCloud();
 </script></body></html>
