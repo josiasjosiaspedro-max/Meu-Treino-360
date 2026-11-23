@@ -1,0 +1,40 @@
+FULLBODY+ 2.0 — ENTRAR COM GOOGLE (iOS + ANDROID)
+================================================
+STATUS: FRONTEND PRONTO. LOGIN GOOGLE SÓ FUNCIONARÁ APÓS CONFIGURAR GOOGLE CLOUD + SUPABASE.
+NENHUMA CONFIGURAÇÃO DE PROVIDER FOI ALTERADA NO SUPABASE.
+
+1) NO GOOGLE CLOUD (https://console.cloud.google.com/auth/overview):
+- Crie/seleciona projeto Google Cloud e configure Google Auth Platform > Branding e Audience.
+- Escolha External (público externo). Se em teste, inclua os usuários de teste.
+- Escopos padrão: openid, email e profile.
+- Em Clients, crie um OAuth Client ID do tipo Web Application.
+- Authorized JavaScript origins:
+  https://josiasjosiaspedro-max.github.io
+- Authorized redirect URIs:
+  https://whdvgdbczhhlxtzdkbjv.supabase.co/auth/v1/callback
+- Copie o Client ID e o Client Secret diretamente para o painel Supabase (NUNCA para index.html nem para uma conversa pública).
+
+2) NO SUPABASE:
+- https://supabase.com/dashboard/project/whdvgdbczhhlxtzdkbjv/auth/providers
+- Em Google, ative o provider. Cole Client ID / Client Secret do Google e salve.
+- Em Authentication > URL Configuration, configure:
+  Site URL: https://josiasjosiaspedro-max.github.io/Meu-Treino-360/
+  Redirect URLs: https://josiasjosiaspedro-max.github.io/Meu-Treino-360/
+- Mantenha o método Email habilitado para usuários antigos.
+
+3) PUBLICAÇÃO NO GITHUB (https://github.com/josiasjosiaspedro-max/Meu-Treino-360):
+- Faça cópia do index.html atual.
+- Envie os arquivos extraídos do ZIP para a RAIZ do repositório.
+- Substitua arquivos antigos com os mesmos nomes.
+- Aguarde o GitHub Pages publicar e recarregue a página. Se o app instalado não atualizar, feche/reabra ou limpe cache do site.
+
+4) TESTE:
+- Em janela privativa do navegador, abra o GitHub Pages, clique em "Continuar com Google".
+- Escolha uma conta Google autorizada e conclua o consentimento.
+- Confira o retorno ao app e se uma sessão aparece em Authentication > Users no Supabase.
+- Verifique que o login tradicional por e-mail e senha continua visível.
+
+ATENÇÃO: Se usar e-mail Google diferente do e-mail de uma conta antiga, serão contas distintas com históricos distintos.
+O Supabase pode vincular identidades com o mesmo e-mail VERIFICADO; para contas NÃO confirmadas, confira a identidade no painel antes de assumir que o histórico será o mesmo.
+O login Google não resolve o limite de envio de e-mails do cadastro tradicional.
+Esta é uma PWA web, não um arquivo APK.
