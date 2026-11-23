@@ -649,7 +649,7 @@ const CLOUD = {
   message: '', error: ''
 };
 const CLOUD_SESSION_STORE = 'fullbody-2-auth-v1';
-const AUTH_RETURN_URL = 'https://josiasjosiaspedro-max.github.io/Meu-Treino-360/';
+const AUTH_RETURN_URL = new URL('./', window.location.href).href; // preserva /android/ no retorno do login Google
 function freshUserDB(){return {version:4,plans:[basePlan()],records:{},metrics:[],cardio:[],profile:{name:'',height:null,targetWeight:null,notes:''},exerciseLogs:{},photos:[],nutrition:{},reminders:{enabled:false,time:'07:00',lead:30}};}
 function safeUserDB(x){
   if(!x || !Array.isArray(x.plans) || !x.records || typeof x.records !== 'object')return freshUserDB();

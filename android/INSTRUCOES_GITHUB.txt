@@ -1,0 +1,20 @@
+FULLBODY+ 2.0 — ANDROID: CORREÇÃO DO RETORNO DO GOOGLE
+
+ERRO CORRIGIDO: o botão Google enviava o usuário à raiz do repositório (iPhone).
+Agora o destino é a pasta a partir da qual a versão Android foi aberta.
+
+COMO PUBLICAR:
+1. No GitHub, abra o repositório Meu-Treino-360 e entre na pasta android/.
+2. Selecione Add file > Upload files.
+3. Envie os arquivos: index.html, sw.js, manifest.webmanifest e os ícones PNG, se necessário.
+4. Confirme Commit changes. NÃO substitua arquivos na raiz do repositório.
+5. Teste https://josiasjosiaspedro-max.github.io/Meu-Treino-360/android/
+
+No Supabase Authentication > URL Configuration devem estar permitidos os dois endereços:
+https://josiasjosiaspedro-max.github.io/Meu-Treino-360/
+https://josiasjosiaspedro-max.github.io/Meu-Treino-360/android/
+
+No Google Cloud, o callback continua sendo o endereço do SUPABASE:
+https://whdvgdbczhhlxtzdkbjv.supabase.co/auth/v1/callback
+
+Não coloque Client Secret do Google Cloud nos arquivos públicos do GitHub.

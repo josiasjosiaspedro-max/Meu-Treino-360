@@ -1,5 +1,5 @@
 /* Fullbody+ 2.0 — Chrome/Android PWA shell. Dados pessoais não entram no Cache Storage. */
-const CACHE_NAME = 'fullbody-2-android-20261123-google-v2';
+const CACHE_NAME = 'fullbody-2-android-20261123-google-v3-return-url';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
